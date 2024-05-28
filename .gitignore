@@ -1,0 +1,23 @@
+# Python Django specific
+*.pyc
+__pycache__/
+/media/
+
+# If you're using a virtual environment
+VEFightFinder/
+
+# Secret keys
+*.secret
+
+# Log files
+*.log
+
+# Node specific
+node_modules/
+/build/
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
