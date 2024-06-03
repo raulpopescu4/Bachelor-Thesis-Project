@@ -8,7 +8,7 @@ VEFightFinder/
 
 # Secret keys
 *.secret
-
+.env
 # Log files
 *.log
 
