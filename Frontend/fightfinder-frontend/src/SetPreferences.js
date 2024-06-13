@@ -1,30 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import api from './api';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
 const questions = [
-  { id: 1, question: "Do you like matches that finish or that go the distance? ", options: ["I wanna see a finish!", "Going to the distance"] },
-  { id: 2, question: "Do you prefer tehnical grapling show-downs or a flashy stand-up fight?", options: ["Grapling", "Stand-up fighting"] },
-  
+  { id: 1, question: "Do you like matches that finish or that go the distance?", options: ["I wanna see a finish!", "Going to the distance"] },
+  { id: 2, question: "Do you prefer technical grappling show-downs or a flashy stand-up fight?", options: ["Grappling", "Stand-up fighting"] },
 ];
 
-const UserPreferences = () => {
+const SetPreferences = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); 
+//   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/user/preferences/')
-      .then(response => {
-        
-        setAnswers(JSON.parse(response.data.preferences || '{}')); 
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching preferences:', error);
-        setLoading(false);
-      });
+    setAnswers({});
+    setCurrentQuestionIndex(0);
   }, []);
 
   const handleAnswer = (option) => {
@@ -32,26 +23,28 @@ const UserPreferences = () => {
     setAnswers(prev => ({ ...prev, [question.id]: option }));
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setCurrentQuestionIndex(questions.length); // Mark that all questions have been answered
     }
   };
 
   const submitPreferences = async () => {
     const formattedData = {
-      preferences: JSON.stringify(answers) 
+      preferences: answers // Sending as a JSON object directly
     };
 
     try {
       const response = await api.post('/user/preferences/', formattedData);
       console.log('Preferences updated:', response.data);
-      navigate('/'); 
+      navigate('/');
     } catch (error) {
       console.error('Error updating preferences:', error);
     }
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+//   if (loading) {
+//     return <p>Loading...</p>;
+//   }
 
   return (
     <div>
@@ -73,4 +66,4 @@ const UserPreferences = () => {
   );
 };
 
-export default UserPreferences;
+export default SetPreferences;

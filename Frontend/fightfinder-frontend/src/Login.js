@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
+import { Link } from 'react-router-dom';
+import './App.css';
+import logo from './images/logo.png';
 
 const Login = ({ setAuth }) => {
   const [username, setUsername] = useState('');
@@ -23,25 +26,40 @@ const Login = ({ setAuth }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Username:</label>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+    <div className="login-container">
+      <div className="logo">
+        <img src={logo} alt="FightFinder Logo" />
       </div>
-      <div>
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <div className="login-form">
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="username"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="btn">Login</button>
+          <div className="register-link">
+            Not Registered Yet? <Link to="/register">Create an account</Link>
+          </div>
+        </form>
       </div>
-      <button type="submit">Login</button>
-    </form>
+    </div>
   );
 };
 

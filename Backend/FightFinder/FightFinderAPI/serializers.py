@@ -31,5 +31,4 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             password=validated_data['password']
         )
-        UserProfile.objects.create(user=user)
         return user
