@@ -1,6 +1,6 @@
 import json
 from rest_framework import serializers
-from .models import UserProfile
+from .models import UserProfile, Fight
 from django.contrib.auth.models import User
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -32,3 +32,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+
+class FightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fight
+        fields = ['id', 'title', 'fighter1', 'fighter2', 'card', 'date', 'details']
+
+

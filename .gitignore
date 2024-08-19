@@ -5,7 +5,7 @@ __pycache__/
 
 # If you're using a virtual environment
 VEFightFinder/
-
+vEnvFF/
 # Secret keys
 *.secret
 .env

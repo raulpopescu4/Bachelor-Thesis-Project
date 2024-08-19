@@ -4,15 +4,18 @@ import api from './api';
 const questions = {
   1: "Do you like matches that finish or that go the distance?",
   2: "Do you prefer technical grappling show-downs or a flashy stand-up fight?",
+  3: "Do you enjoy fast-paced fights or more strategic, slower-paced bouts?",
+  4: "Which weight class do you enjoy watching the most?",
+  5: "Do you like watching underdogs or favorites winning?",
 };
 
 const SeePreferences = () => {
   const [preferences, setPreferences] = useState({});
   const [loading, setLoading] = useState(true);
-  const hasFetched = useRef(false); // Ref to ensure effect only runs once
+  const hasFetched = useRef(false); 
 
   useEffect(() => {
-    if (hasFetched.current) return; // Exit if already fetched
+    if (hasFetched.current) return; 
     hasFetched.current = true;
 
     const fetchPreferences = async () => {
@@ -28,7 +31,7 @@ const SeePreferences = () => {
     };
 
     fetchPreferences();
-  }, []); // Empty dependency array ensures this runs only once
+  }, []); 
 
   if (loading) {
     return <p>Loading...</p>;
@@ -36,7 +39,7 @@ const SeePreferences = () => {
 
   return (
     <div>
-      <h1>Your Preferences</h1>
+      <h1 className='welcome-header'>Your Preferences</h1>
       {Object.keys(preferences).length > 0 ? (
         Object.entries(preferences).map(([key, value]) => (
           <div key={key}>

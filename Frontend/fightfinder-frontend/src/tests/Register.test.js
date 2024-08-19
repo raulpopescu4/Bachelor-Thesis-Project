@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Register from './Register';
+import '@testing-library/jest-dom';
+import Register from '../components/Register';
 
 test('renders registration form', () => {
   render(<Register />);
