@@ -71,6 +71,8 @@ const Register = ({ setAuth }) => {
             <label htmlFor="password">Password</label>
             <input
               type="password"
+              pattern="(?=.*\d)(?=.*[A-Z]).{8,}"
+              title="Password must contain at least one number, one uppercase letter, and be at least 8 characters long"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -85,7 +87,13 @@ const Register = ({ setAuth }) => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-            />
+            /> 
+          <br></br>
+          <br></br>
+          <div className="form-group">
+            <label htmlFor="agree">I agree to the data collection of the application.</label>
+            <input type="checkbox" id="agree" name="agree" required />
+          </div>
           </div>
           <button type="submit" className="btn">Register</button>
           <div className="register-link">

@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './FightCard.css';
 import api from './api';
 
-const FightCard = ({ fight, onBookmark, onDeleteBookmark, pageType }) => {
+const FightCard = ({ fight, onBookmark, onDeleteBookmark, pageType, onExpand }) => {
   const [expanded, setExpanded] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(fight.isBookmarked);
   const [likeStatus, setLikeStatus] = useState(fight.like_status || 0); 
 
-  const toggleExpand = () => setExpanded(!expanded);
+  const toggleExpand = () => {
+    setExpanded(!expanded);
+    if (!expanded && onExpand) {
+      // Call the onExpand function to notify parent of height change
+      onExpand();
+    }
+  };
 
   const handleBookmark = async () => {
     await onBookmark(fight);
@@ -60,7 +66,7 @@ const FightCard = ({ fight, onBookmark, onDeleteBookmark, pageType }) => {
         {fight.title} (Click to {expanded ? 'collapse' : 'expand'})
       </h2>
       {expanded && (
-        <div>
+        <div className="fightcard-content">
           <p>Fighters: {fight.fighter1} vs. {fight.fighter2}</p>
           <p>Event: {fight.card}</p>
           <p>Date: {new Date(fight.date).toLocaleDateString()}</p>

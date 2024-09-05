@@ -32,7 +32,6 @@ class Bookmark(models.Model):
     
 @receiver(post_delete, sender=Bookmark)
 def delete_likes_dislikes_on_unbookmark(sender, instance, **kwargs):
-    # Automatically delete all likes/dislikes related to the unbookmarked fight by this user
     LikeDislike.objects.filter(user=instance.user, fight=instance.fight).delete()
 
 class LikeDislike(models.Model):
@@ -53,7 +52,6 @@ class LikeDislike(models.Model):
         unique_together = ('user', 'fight')
 
     def save(self, *args, **kwargs):
-        # Ensure the fight is bookmarked before saving like/dislike
         if not Bookmark.objects.filter(user=self.user, fight=self.fight).exists():
             raise ValueError("Cannot like/dislike a fight that is not bookmarked.")
         super().save(*args, **kwargs)

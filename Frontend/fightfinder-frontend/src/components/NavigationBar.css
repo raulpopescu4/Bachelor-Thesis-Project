@@ -1,0 +1,68 @@
+/* NavigationBar.css */
+
+.navbar {
+    width: calc(100% - 20px); /* Reduces the width slightly to avoid overlapping the scrollbar */
+    display: flex;
+    justify-content: space-between; /* Ensures the logo is on the left, links in the center, and profile on the right */
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo {
+    height: 50px;
+    flex-shrink: 0; /* Prevents the logo from shrinking */
+}
+
+.navbar-links {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.navbar-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    white-space: nowrap; 
+}
+
+.navbar-links a:hover {
+    background-color: #a00;
+    color: #fff;
+}
+
+.navbar-profile {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; 
+    padding-right: 20px; 
+}
+
+.navbar-profile a {
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar-profile a:hover {
+    background-color: #a00;
+    color: #fff;
+}

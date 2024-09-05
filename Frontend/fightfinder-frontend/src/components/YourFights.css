@@ -1,0 +1,59 @@
+/* YourFights.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  /* Main container for the carousel */
+  .carousel-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    position: relative;
+  }
+  
+  /* Fight Card Container within the carousel */
+  .fight-card-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .slick-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    width: auto !important; /* Ensure slick-slide has proper width */
+  }
+  
+  .slick-track {
+    display: flex !important; /* Prevent stacking of slides */
+  }
+  
+  .slick-list {
+    overflow: hidden; /* Prevents content from overflowing outside the carousel */
+  }
+  
+  .slick-dots {
+    bottom: -30px;
+  }
+  
+  /* Title styling */
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  

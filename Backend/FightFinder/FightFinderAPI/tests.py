@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
-from .models import UserProfile, Fight, Bookmark
+from .models import UserProfile, Fight, Bookmark, LikeDislike
 from unittest.mock import patch, MagicMock
 from django.forms.models import model_to_dict
 import json
@@ -69,7 +69,7 @@ class ViewTestCase(TestCase):
 
     @patch('FightFinderAPI.views.OpenAI')
     def test_get_recommendations(self, mock_openai):
-        # Create a mock response object that mimics the API response structure
+        #create a mock response object that mimics the API response structure
         mock_openai_response = MagicMock()
         mock_openai_response.choices = [
             MagicMock(message=MagicMock(content=json.dumps([
@@ -84,14 +84,14 @@ class ViewTestCase(TestCase):
             ])))
         ]
         
-        # Set this mock response as the return value of the API call
+        #set this mock response as the return value of the API call
         mock_openai.return_value.chat.completions.create.return_value = mock_openai_response
         
-        # Call the view and check the response
+        #call the view and check the response
         response = self.client.get(reverse('get_recommendations'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('fights', response.data)
-        # Verify that the data matches the expected output
+        #verify that the data matches the expected output
         expected_data = {
             'id': None,
             "title": "Kamaru Usman vs. Jorge Masvidal 2",
@@ -106,7 +106,7 @@ class ViewTestCase(TestCase):
 
     def test_bookmark_fight(self):
         fight_dict = model_to_dict(self.fight)
-        fight_dict.pop('id', None)  # Remove the id to prevent IntegrityError
+        fight_dict.pop('id', None)  #remove the id to prevent IntegrityError
         data = {'fight': fight_dict}
         response = self.client.post(reverse('bookmark_fight'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -127,4 +127,76 @@ class ViewTestCase(TestCase):
         response = self.client.delete(reverse('delete_bookmark', kwargs={'bookmark_id': 999}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
+class ToggleLikeDislikeTestCase(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.force_authenticate(user=self.user)
+        self.fight = Fight.objects.create(title="Test Fight", fighter1="Fighter 1", fighter2="Fighter 2", card="Test Card", date="2022-01-01", details="Test fight details")
+        self.like_url = reverse('toggle_like_dislike', args=[self.fight.id, 'like'])
+        self.dislike_url = reverse('toggle_like_dislike', args=[self.fight.id, 'dislike'])
+
+    def test_like_fight(self):
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['message'], 'Fight liked.')
+        self.assertTrue(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.LIKE).exists())
+
+    def test_dislike_fight(self):
+        response = self.client.post(self.dislike_url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['message'], 'Fight disliked.')
+        self.assertTrue(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.DISLIKE).exists())
+
+    def test_toggle_like_to_dislike(self):
+        #like the fight first
+        self.client.post(self.like_url)
+        #dislike it
+        response = self.client.post(self.dislike_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Fight disliked.')
+        self.assertTrue(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.DISLIKE).exists())
+        self.assertFalse(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.LIKE).exists())
+
+    def test_remove_like(self):
+        #like the fight
+        self.client.post(self.like_url)
+        #remove the like by calling the like endpoint again
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.LIKE).exists())
+
+    def test_remove_dislike(self):
+        #dislike the fight
+        self.client.post(self.dislike_url)
+        #remove the dislike by calling the dislike endpoint again
+        response = self.client.post(self.dislike_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.DISLIKE).exists())
+    
+    def test_like_then_dislike(self):
+        #like the fight first
+        self.client.post(self.like_url)
+        #dislike it
+        self.client.post(self.dislike_url)
+        #like it again
+        response = self.client.post(self.like_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Fight liked.')
+        self.assertTrue(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.LIKE).exists())
+        self.assertFalse(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.DISLIKE).exists())
+
+    def test_dislike_then_like(self):
+        #dislike the fight first
+        self.client.post(self.dislike_url)
+        #like it
+        self.client.post(self.like_url)
+        #dislike it again
+        response = self.client.post(self.dislike_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Fight disliked.')
+        self.assertTrue(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.DISLIKE).exists())
+        self.assertFalse(LikeDislike.objects.filter(user=self.user, fight=self.fight, value=LikeDislike.LIKE).exists())
 

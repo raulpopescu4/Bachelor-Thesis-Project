@@ -39,6 +39,26 @@ def user_preferences(request):
         
     return Response({'preferences': preferences})
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request):
+    user = request.user
+    
+    user.delete()
+    
+    return Response({'message': 'User profile and all associated data deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_preferences(request):
+    user_profile = request.user.userprofile
+    user_profile.preferences = json.dumps({}) 
+    user_profile.save()
+    
+    return Response({'message': 'Preferences deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['POST'])
 def register(request):
@@ -71,12 +91,12 @@ def get_recommendations(request):
     top_fighters = [fighter['fighter'] for fighter in fighter_counts[:3]]
 
     prompt = (
-        f"User preferences include: {preferences_summary}. "
+        f"Stated User preferences include: {preferences_summary}. "
         f"Top liked fights: {', '.join(top_liked_fights)}. "
         f"Popular globally bookmarked fights feature: {', '.join(f['fight__title'] for f in top_bookmarks_global)}. "
         f"Preferred fighters based on user activity: {', '.join(top_fighters)}. "
         f"Exclude these fights: {exclusions}. "
-        "Based on these insights, provide UFC fight recommendations. "
+        "Based on these insights, provide UFC fight recommendations, follow this weights: stated user preferences 60%, rest of insights 40%. "
         "Each recommendation should be a JSON object with the following fields: "
         "title, fighter1, fighter2, card, date, details. "
         "Return only the JSON objects, nothing else."
@@ -86,7 +106,7 @@ def get_recommendations(request):
     completion = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are an assistant that provides UFC fight recommendations. Always provide at least 5 recommendations."},
+            {"role": "system", "content": "You are an assistant that provides UFC fight recommendations. Always provide at least 7 recommendations."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=700
@@ -143,8 +163,35 @@ def view_bookmarked_fights(request):
 @permission_classes([IsAuthenticated])
 def delete_bookmark(request, bookmark_id):
     bookmark = get_object_or_404(Bookmark, id=bookmark_id, user=request.user)
-    bookmark.delete()
-    return Response({'message': 'Bookmark deleted successfully'}, status=204)
+    fight = bookmark.fight  
+    
+    bookmark.delete()  
+
+   
+    if not Bookmark.objects.filter(fight=fight).exists():
+        fight.delete()  
+
+    return Response({'message': 'Bookmark and associated fight deleted successfully if no other bookmarks exist.'}, status=204)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_all_bookmarks(request):
+    user = request.user
+    
+  
+    bookmarks = Bookmark.objects.filter(user=user)
+    
+
+    for bookmark in bookmarks:
+        fight = bookmark.fight
+        bookmark.delete()
+        
+
+        if not Bookmark.objects.filter(fight=fight).exists():
+            fight.delete()
+    
+    return Response({'message': 'All bookmarks deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 @api_view(['POST'])

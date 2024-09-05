@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FightCard from '../components/FightCard';
+import api from '../components/api';
 
 describe('FightCard Component', () => {
   const mockFight = {
@@ -58,5 +59,72 @@ describe('FightCard Component', () => {
     fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
     fireEvent.click(screen.getByText('Delete Bookmark'));
     expect(onDeleteBookmarkMock).toHaveBeenCalledWith(mockFight.bookmark_id);
+  });
+});
+
+
+jest.mock('../components/api'); //mock the API module
+
+describe('FightCard Component - Like/Dislike Functionality', () => {
+  const mockFight = {
+    id: 1,
+    title: 'UFC 229',
+    fighter1: 'Khabib Nurmagomedov',
+    fighter2: 'Conor McGregor',
+    card: 'UFC 229 Main Event',
+    date: '2018-10-06',
+    details: 'Khabib won by submission in the fourth round.',
+    bookmark_id: 123,
+    like_status: 0, // 0 for no like/dislike, 1 for like, -1 for dislike
+  };
+
+  test('renders "Like" button when like_status is 0', () => {
+    render(<FightCard fight={mockFight} onBookmark={() => {}} onDeleteBookmark={() => {}} pageType="yourFights" />);
+    fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
+    expect(screen.getByText('Like')).toBeInTheDocument();
+    expect(screen.queryByText('Dislike')).not.toBeInTheDocument();
+  });
+
+  test('renders "Dislike" button when like_status is 1', () => {
+    const likedFight = { ...mockFight, like_status: 1 };
+    render(<FightCard fight={likedFight} onBookmark={() => {}} onDeleteBookmark={() => {}} pageType="yourFights" />);
+    fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
+    expect(screen.getByText('Dislike')).toBeInTheDocument();
+    expect(screen.queryByText('Like')).not.toBeInTheDocument();
+  });
+
+  test('calls handleLikeDislike with "like" when Like button is clicked', async () => {
+    api.post.mockResolvedValue({ status: 200, data: { message: 'Fight liked.' } });
+    
+    render(<FightCard fight={mockFight} onBookmark={() => {}} onDeleteBookmark={() => {}} pageType="yourFights" />);
+    fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
+    fireEvent.click(screen.getByText('Like'));
+
+    expect(api.post).toHaveBeenCalledWith('/fight/1/like/');
+    expect(await screen.findByText('Dislike')).toBeInTheDocument();
+  });
+
+  test('calls handleLikeDislike with "dislike" when Dislike button is clicked', async () => {
+    const likedFight = { ...mockFight, like_status: 1 };
+    api.post.mockResolvedValue({ status: 200, data: { message: 'Fight disliked.' } });
+
+    render(<FightCard fight={likedFight} onBookmark={() => {}} onDeleteBookmark={() => {}} pageType="yourFights" />);
+    fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
+    fireEvent.click(screen.getByText('Dislike'));
+
+    expect(api.post).toHaveBeenCalledWith('/fight/1/dislike/');
+    expect(await screen.findByText('Like')).toBeInTheDocument();
+  });
+
+  test('handles API errors gracefully during like/dislike', async () => {
+    api.post.mockRejectedValue(new Error('Failed to toggle like/dislike'));
+
+    render(<FightCard fight={mockFight} onBookmark={() => {}} onDeleteBookmark={() => {}} pageType="yourFights" />);
+    fireEvent.click(screen.getByText('UFC 229 (Click to expand)'));
+    fireEvent.click(screen.getByText('Like'));
+
+    expect(api.post).toHaveBeenCalledWith('/fight/1/like/');
+    // Error will be logged, and the button should not change
+    expect(screen.getByText('Like')).toBeInTheDocument();
   });
 });
